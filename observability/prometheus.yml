@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s        # 실습에서 그래프 반응을 빠르게 보기 위해 짧게 (운영은 15~30s)
+
+scrape_configs:
+  - job_name: free-llm-monitoring
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8080"]   # 컨테이너 안에서 본 "내 PC"
+        labels:
+          application: free-llm-monitoring

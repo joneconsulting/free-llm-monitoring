@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    // [Week 0 검증 대상] 1.0.x 최신 패치 사용 여부 결정
+    set('springAiVersion', '1.0.0')
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // F-2 핵심: Actuator 가 있어야 Spring AI 의 관측이 메트릭으로 기록된다
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // 모델: OpenAI(기본) / Ollama(무료) — spring.ai.model.chat 으로 선택
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+
+    // RAG: SimpleVectorStore + QuestionAnswerAdvisor
+    implementation 'org.springframework.ai:spring-ai-vector-store'
+    implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
+
+    // F-3: 메트릭을 Prometheus 형식으로 내보내기 (/actuator/prometheus)
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

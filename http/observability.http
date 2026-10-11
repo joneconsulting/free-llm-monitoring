@@ -1,0 +1,60 @@
+### ─────────────────────────────────────────────
+### F-0  정상 기동 확인
+### ─────────────────────────────────────────────
+
+### 0) Health
+GET http://localhost:8080/actuator/health
+
+
+### ─────────────────────────────────────────────
+### F-2  Actuator 와 Spring AI 메트릭
+### ─────────────────────────────────────────────
+
+### 1) 메트릭 목록
+GET http://localhost:8080/actuator/metrics
+
+### 2) 모델 호출 메트릭 — 시작 직후에는 gen_ai.operation.name 이 embedding 뿐
+GET http://localhost:8080/actuator/metrics/gen_ai.client.operation
+
+### 3) 단순 채팅 호출
+GET http://localhost:8080/api/chat?message=배송비는 얼마인가요?
+
+### 4) 2번 다시 — gen_ai.operation.name 에 chat, gen_ai.request.model 에 gpt-4o-mini 추가
+GET http://localhost:8080/actuator/metrics/gen_ai.client.operation
+
+### 5) 채팅 호출만 보기
+GET http://localhost:8080/actuator/metrics/gen_ai.client.operation?tag=gen_ai.operation.name:chat
+
+### 6) 토큰 사용량 — input 만
+GET http://localhost:8080/actuator/metrics/gen_ai.client.token.usage?tag=gen_ai.token.type:input
+
+### 7) 토큰 사용량 — 채팅 input 만
+GET http://localhost:8080/actuator/metrics/gen_ai.client.token.usage?tag=gen_ai.token.type:input&tag=gen_ai.operation.name:chat
+
+
+### ─────────────────────────────────────────────
+### F-3  Prometheus 형식
+### ─────────────────────────────────────────────
+
+### 8) Prometheus 가 수집하는 원본
+GET http://localhost:8080/actuator/prometheus
+
+### 9) 스트리밍 호출
+GET http://localhost:8080/api/chat/stream?message=반품 절차를 3단계로 알려줘
+
+### 10) RAG 호출
+GET http://localhost:8080/api/rag?question=포인트는 언제 소멸되나요?
+
+### 11) 툴 호출 — 요청 1번, 모델 호출 2번
+GET http://localhost:8080/api/agent?message=주문 A1001 어디쯤 왔어?
+
+
+### ─────────────────────────────────────────────
+### F-4  비용 폭탄 재현 — topK 4 → 20
+### ─────────────────────────────────────────────
+
+### 12) 평소
+GET http://localhost:8080/api/rag?question=반품하고 싶어요&topK=4
+
+### 13) 급증 — 12) 와 13) 사이 7) 의 값이 얼마나 늘었는지 비교
+GET http://localhost:8080/api/rag?question=반품하고 싶어요&topK=20

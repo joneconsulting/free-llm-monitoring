@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: free-llm-monitoring
+
+  ai:
+    # 사용할 모델 공급자 선택 (openai | ollama)
+    model:
+      chat: openai
+      embedding: openai
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+          stream-usage: true   # 스트리밍 응답에서도 토큰 사용량을 받는다
+      embedding:
+        options:
+          model: text-embedding-3-small
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2
+      embedding:
+        options:
+          model: nomic-embed-text
+
+# F-2: Actuator 엔드포인트 노출
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always    # 로컬 실습용. 운영은 when-authorized
+  # F-3: p95 응답 시간을 계산하려면 히스토그램 버킷이 필요하다
+  metrics:
+    distribution:
+      percentiles-histogram:
+        gen_ai.client.operation: true
+        db.vector.client.operation: true

@@ -1,0 +1,47 @@
+# 무료 강의 실습 스택
+#   docker compose up -d                       → Prometheus, Grafana
+#   docker compose --profile ollama up -d      → + Ollama (무료 모델)
+#
+#   Prometheus  http://localhost:9090
+#   Grafana     http://localhost:3000   (admin / admin, 대시보드 자동 등록)
+#
+# [Week 0 검증 대상] 이미지 태그는 녹화 시점 최신 안정판으로 확인
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: fm-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux 에서 호스트의 Spring 앱에 접근
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    container_name: fm-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_DEFAULT_THEME=dark
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fm-ollama
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:
