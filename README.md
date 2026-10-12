@@ -30,6 +30,8 @@ cd observability; docker compose up -d; cd ..
 $env:OPENAI_API_KEY="sk-..."
 .\gradlew.bat bootRun
 # 새 PowerShell 창에서
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
 .\scripts\load-test.ps1
 ```
 
